@@ -36,6 +36,9 @@ base_topic := "$PREFIX/$LOCATION/$NAME/"
 // Topics for published values
 raw_value_topic := (base_topic) + "raw"
 open_topic := (base_topic) + "open"
+// Topics for subscribed values
+sleep-duration-topic := (base_topic) + "sleep-duration"
+sleep-duration-duration-topic := (base_topic) + "sleep-duration-duration"
 
 // Initialize complex global variables
 config_bucket := storage.Bucket.open --flash "config_bucket"
@@ -45,6 +48,11 @@ echo := gpio.Pin ECHO
 sensor := hc-sr04.Driver --echo=echo --trigger=trigger
 
 door-open := false
+DEFAULT_SLEEP_DURATION := Duration --s=2
+// The duration for which a custom sleep duration is active
+DEFAULT_SLEEP_DURATION_DURATION := Duration --s=120
+sleep_duration := DEFAULT-SLEEP-DURATION
+reset-sleep-duration-at := Time.now + DEFAULT_SLEEP_DURATION_DURATION
 
 // Measure the distance and publish it to the MQTT broker
 measure:
@@ -72,9 +80,43 @@ main:
     --reconnection-strategy=mqtt.TenaciousReconnectionStrategy --delay-lambda=:: Duration --s=(it < 30 ? 2 : 15)
   print "MQTT client connected"
 
+  mqtt_client.subscribe sleep-duration-topic:: | topic/string payload/ByteArray |
+    catch --trace:
+      decoded := json.decode payload
+      print "Received value on '$topic': $decoded"
+      if decoded is int:
+        // Limit to a maximum sleep duration of 60 seconds
+        if decoded > 60: decoded = 60
+        if decoded < 0: decoded = 0
+
+        sleep_duration = Duration --s=decoded
+        reset-sleep-duration-at = Time.now + DEFAULT_SLEEP_DURATION_DURATION
+        print "Sleep duration set to $sleep_duration"
+      else:
+        print "Invalid value received on '$topic': $decoded"
   
+  mqtt_client.subscribe sleep-duration-duration-topic:: | topic/string payload/ByteArray |
+    catch --trace:
+      decoded := json.decode payload
+      print "Received value on '$topic': $decoded"
+      if decoded is int:
+        // Limit to a maximum sleep duration of 60 seconds
+        MAX_SLEEP_DURATION_DURATION := 60*60*24*365
+        if decoded > MAX_SLEEP_DURATION_DURATION: decoded = MAX_SLEEP_DURATION_DURATION
+        if decoded < 0: decoded = 0
+        if decoded == 0: decoded = MAX_SLEEP_DURATION_DURATION
+
+        reset-sleep-duration-at = Time.now + (Duration --s=decoded)
+        print "Keeping the current sleep-duration until $reset-sleep-duration-at"
+      else:
+        print "Invalid value received on '$topic': $decoded"
+
   while true:
     catch --trace:
       measure
-      sleep --ms=2000
+      sleep sleep-duration
+      if Time.now > reset-sleep-duration-at and sleep-duration != DEFAULT_SLEEP_DURATION:
+        sleep-duration = DEFAULT_SLEEP_DURATION
+        print "Sleep duration reset to default: $sleep_duration"
+        reset-sleep-duration-at = Time.now + DEFAULT_SLEEP_DURATION_DURATION
   

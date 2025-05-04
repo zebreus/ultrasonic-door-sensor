@@ -25,7 +25,7 @@ ECHO ::= 6
 // The value from which the door is considered open
 DOOR_OPEN_THRESHOLD_MM ::= 200
 // The value from which the door is considered closed\
-DOOR_CLOSED_THRESHOLD_MM ::= 50
+DOOR_CLOSED_THRESHOLD_MM ::= 70
 
 // *** No configuration, just normal globals ***
 

@@ -54,6 +54,9 @@ DEFAULT_SLEEP_DURATION_DURATION := Duration --s=120
 sleep_duration := DEFAULT-SLEEP-DURATION
 reset-sleep-duration-at := Time.now + DEFAULT_SLEEP_DURATION_DURATION
 
+DEEP_SLEEP_THRESHOLD := Duration --s=3
+NORMAL_SLEEP_AFTER_DEEP_SLEEP := Duration --ms=500
+
 // Measure the distance and publish it to the MQTT broker
 measure:
   sum_of_distances := sensor.read-distance
@@ -73,6 +76,22 @@ measure:
   mqtt_client.publish --qos=0 open-topic "$(door-open ? "1" : "0")"
   sleep --ms=10
   
+sleep-or-deep-sleep:
+  if sleep-duration < DEEP_SLEEP_THRESHOLD:
+    sleep sleep-duration
+  else:
+    print "Deep-sleeping sleeping for $sleep_duration"
+    esp32.deep-sleep (sleep-duration - NORMAL_SLEEP_AFTER_DEEP_SLEEP)
+    // Short read + extra sleep to help the sensor wake up
+    sensor.read-distance
+    sleep NORMAL_SLEEP_AFTER_DEEP_SLEEP
+
+  
+  if Time.now > reset-sleep-duration-at and sleep-duration != DEFAULT_SLEEP_DURATION:
+    sleep-duration = DEFAULT_SLEEP_DURATION
+    print "Sleep duration reset to default: $sleep_duration"
+    reset-sleep-duration-at = Time.now + DEFAULT_SLEEP_DURATION_DURATION
+
 main:
   mqtt_client.start
     --client-id=CLIENT-ID
@@ -114,9 +133,6 @@ main:
   while true:
     catch --trace:
       measure
-      sleep sleep-duration
-      if Time.now > reset-sleep-duration-at and sleep-duration != DEFAULT_SLEEP_DURATION:
-        sleep-duration = DEFAULT_SLEEP_DURATION
-        print "Sleep duration reset to default: $sleep_duration"
-        reset-sleep-duration-at = Time.now + DEFAULT_SLEEP_DURATION_DURATION
+      sleep-or-deep-sleep
+
   

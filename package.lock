@@ -1,0 +1,15 @@
+sdk: ^2.0.0-alpha.151
+prefixes:
+  hc_sr04: toit-hc-sr04
+  mqtt: mqtt
+packages:
+  mqtt:
+    url: github.com/toitware/mqtt
+    name: mqtt
+    version: 2.11.0
+    hash: d680e17757ac4ce4590b4880d906a788db6f7a34
+  toit-hc-sr04:
+    url: github.com/lask/toit-hc-sr04
+    name: hc_sr04
+    version: 2.1.1
+    hash: da8389adec9f012999c385b69bc42e26e19b51fa

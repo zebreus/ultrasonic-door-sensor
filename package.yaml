@@ -1,0 +1,7 @@
+dependencies:
+  hc_sr04:
+    url: github.com/lask/toit-hc-sr04
+    version: ^2.1.1
+  mqtt:
+    url: github.com/toitware/mqtt
+    version: ^2.11.0

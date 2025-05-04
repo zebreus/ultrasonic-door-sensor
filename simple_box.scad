@@ -15,11 +15,11 @@ box_bottom();
 //BOX
 //--------------------------------------------------
 //inner box width + tolerances
-w=64;
+w=63;
 //inner box length + tolerances
-h=30;
+h=33;
 //inner box depth 
-d=43;
+d=38;
 //wall tickness
 wt=3.0;
 //bottom plate tickness
@@ -34,17 +34,17 @@ cwt=1.5;
 //BOARD MOUNTING HOLES
 //--------------------------------------------------
 //position
-cx=2;
-cy=-3;
+cx=2.5;
+cy=-4.5;
 //holes size (radius)
-chs_i=0.75;
+chs_i=1.05;
 chs_o=2;
 //distancer height
 dsth=7;
 //holes distance h
-chd_h=41.5;
+chd_h=42.25;
 //holes distance v
-chd_v=12;
+chd_v=17;
 //--------------------------------------------------
 //TOP PART MOUNTING HOLES
 //--------------------------------------------------
@@ -134,9 +134,9 @@ module box_bottom()
         /*************************/
         
         // USB c port cut
-        usb_c_tolerance = 5;
-        usb_c_port_pos_height = 17;
-        usb_c_port_pos_y = 12;
+        usb_c_tolerance = 4;
+        usb_c_port_pos_height = 15;
+        usb_c_port_pos_y = 10;
     
         translate([-w/2+1,h/2 - usb_c_port_pos_y,bpt + usb_c_port_pos_height])
         rotate([0,0,180])
@@ -205,7 +205,7 @@ module bh_cut()
 //        fhex(5.5,3);
         
         // Ultra sonic holes
-        translate([-25.5/2,0,-1])
+        translate([-26.5/2,0,-1])
         cylinder(d=17, h= bpt+dsth+2);
              translate([25/2,0,-1])
         cylinder(d=17, h= bpt+dsth+2);

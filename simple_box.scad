@@ -134,9 +134,9 @@ module box_bottom()
         /*************************/
         
         // USB c port cut
-        usb_c_tolerance = 4;
+        usb_c_tolerance = 3;
         usb_c_port_pos_height = 15;
-        usb_c_port_pos_y = 10;
+        usb_c_port_pos_y = 14;
     
         translate([-w/2+1,h/2 - usb_c_port_pos_y,bpt + usb_c_port_pos_height])
         rotate([0,0,180])
